@@ -58,11 +58,19 @@ export class AppController {
       Authorization: authHeader,
       'Content-Type': 'application/json',
     };
-    return this.httpService
-        .post(`${urlBackend}/wallet/charge`, chargeDTO, {
-          headers,
-        })
-        .pipe(map((response) => response.data));
+    try {
+      return this.httpService
+          .post(`${urlBackend}/wallet/charge`, chargeDTO, {
+            headers,
+          })
+          .pipe(map((response) => response.data))
+          .toPromise();
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        throw new HttpException(error.response.data, 404);
+      }
+      throw error;
+    }
   }
 
   @Get('wallet/funds/:document/:phone')
